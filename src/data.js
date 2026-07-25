@@ -1,0 +1,91 @@
+// ─────────────────────────────────────────────────────────────
+//  EDIT THIS FILE to personalize your site.
+//  Everything the pages display comes from here.
+//  Populated from your CV (Data Engineer). Tweak anything freely.
+// ─────────────────────────────────────────────────────────────
+
+export const profile = {
+  name: 'Bhathiya Bandara',
+  role: 'Technical Lead · Data Engineering',
+  tagline:
+    'Data engineer with 6+ years across banking and telecoms — owning data platforms and ELT/ETL systems end to end, from ingestion and modeling to reporting delivery, with a focus on reliable pipelines, SLAs, and performance.',
+  location: 'Colombo, Sri Lanka',
+  email: 'bhathiyabandara4@gmail.com',
+  resumeUrl: '', // drop a PDF in /public (e.g. 'resume.pdf') and link it here
+  socials: [
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/bhathiya-bandara-34385b159/' },
+    { label: 'Email', url: 'mailto:bhathiyabandara4@gmail.com' },
+  ],
+}
+
+export const about = {
+  paragraphs: [
+    'I lead data-engineering delivery at Sampath Bank, owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads. I set the direction for the data platform and partner with business stakeholders to translate requirements into scalable data solutions.',
+    'Previously I was part of Huawei’s data-engineering team, where I earned the GTS President Award for Best New Employee (2021). I have a track record of owning data platforms and ELT/ETL systems end to end — with expert Python and SQL, pipeline SLAs and monitoring, and performance tuning — and I enjoy setting technical standards and mentoring engineers.',
+  ],
+  // Skills grouped by category (renders as labelled groups of pills).
+  skillGroups: [
+    { label: 'Core', items: ['ETL / ELT', 'Apache Airflow', 'Data Modeling', 'Data Warehousing'] },
+    { label: 'Big Data', items: ['HDFS / Hadoop', 'Apache Spark'] },
+    { label: 'Databases', items: ['Greenplum', 'PostgreSQL', 'Oracle SQL', 'SQL'] },
+    { label: 'Languages', items: ['Python', 'Bash / Shell', 'C++', 'MATLAB'] },
+    { label: 'Practices', items: ['SLAs & Monitoring', 'Performance Tuning', 'CI/CD'] },
+    { label: 'Platforms', items: ['Linux', 'Huawei Cloud'] },
+  ],
+}
+
+// The CV is experience-led rather than project-led, so these highlight
+// signature initiatives. Edit titles/descriptions or add real project links.
+export const projects = [
+  {
+    title: 'XML Processing Optimization',
+    description:
+      'Cut XML processing time by ~7.5× — from 5 hours to 40 minutes — through query and script optimisation on production data workloads.',
+    tags: ['SQL', 'Python', 'Performance Tuning'],
+    liveUrl: '',
+    codeUrl: '',
+  },
+  {
+    title: 'Production ETL Platform',
+    description:
+      'Owned 10+ production ETL pipelines end to end — design, deployment, monitoring, and reliability — across analytics and reporting workloads.',
+    tags: ['ETL / ELT', 'Airflow', 'Data Modeling'],
+    liveUrl: '',
+    codeUrl: '',
+  },
+  {
+    title: 'Data-Platform Selection',
+    description:
+      'Led the data-platform selection, driving the RFC and proof-of-concept process from evaluation through to a final recommendation.',
+    tags: ['Architecture', 'RFC', 'PoC'],
+    liveUrl: '',
+    codeUrl: '',
+  },
+]
+
+export const experience = [
+  {
+    role: 'Technical Lead / Senior Data Engineer',
+    company: 'Sampath Bank',
+    period: 'Feb 2025 — Present',
+    points: [
+      'Lead the bank’s data-engineering delivery — owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads.',
+      'Set the direction for the data platform and partner with business stakeholders to translate requirements into scalable data solutions.',
+      'Cut XML processing time ~7.5× (5 hours → 40 minutes) through query and script optimisation.',
+      'Owned 10+ production ETL pipelines end to end, and led the data-platform selection (RFC and PoC to recommendation).',
+      'Single point of contact (SPOC) for the customer; authored FRS and HLD documents translating business requirements into technical specifications.',
+    ],
+  },
+  {
+    role: 'Senior Telecommunications Engineer, Data Engineering',
+    company: 'Huawei Technologies Lanka',
+    period: 'Mar 2020 — Feb 2025',
+    points: [
+      'Earned the GTS President Award for Best New Employee (2021).',
+      'Built data integrations into Hadoop / HDFS using Python and Linux (ETL), and wrote day-to-day SQL to query and analyse data from the HDFS big-data platform.',
+      'Developed and deployed Bash / Python automation on Linux servers for data queries and platform-monitoring reports.',
+      'Established monitoring, alerting, and SLAs across ETL pipelines, improving observability and reducing failure-resolution time; led root-cause investigation for data-quality and freshness issues.',
+      'Hosted and presented monthly progress reviews with the customer. (Telecommunications Engineer, Data Engineering 2020–2023; Senior 2023–2025.)',
+    ],
+  },
+]
