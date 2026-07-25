@@ -6,9 +6,9 @@
 
 export const profile = {
   name: 'Bhathiya Bandara',
-  role: 'Technical Lead · Data Engineering',
+  role: 'Senior Engineer · Data Engineering',
   tagline:
-    'Data engineer with 6+ years across banking and telecoms — owning data platforms and ELT/ETL systems end to end, from ingestion and modeling to reporting delivery, with a focus on reliable pipelines, SLAs, and performance.',
+    'Senior Data engineer with 6+ years across banking and telecoms — owning data platforms and ELT/ETL systems end to end, from ingestion and modeling to reporting delivery, with a focus on reliable pipelines, SLAs, and performance.',
   location: 'Colombo, Sri Lanka',
   email: 'bhathiyabandara4@gmail.com',
   resumeUrl: '', // drop a PDF in /public (e.g. 'resume.pdf') and link it here
@@ -20,7 +20,7 @@ export const profile = {
 
 export const about = {
   paragraphs: [
-    'I lead data-engineering delivery at Sampath Bank, owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads. I set the direction for the data platform and partner with business stakeholders to translate requirements into scalable data solutions.',
+    'I am a senior data engineer at Sampath Bank, owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads.',
     'Previously I was part of Huawei’s data-engineering team, where I earned the GTS President Award for Best New Employee (2021). I have a track record of owning data platforms and ELT/ETL systems end to end — with expert Python and SQL, pipeline SLAs and monitoring, and performance tuning — and I enjoy setting technical standards and mentoring engineers.',
   ],
   // Skills grouped by category (renders as labelled groups of pills).
@@ -53,14 +53,6 @@ export const projects = [
     liveUrl: '',
     codeUrl: '',
   },
-  {
-    title: 'Data-Platform Selection',
-    description:
-      'Led the data-platform selection, driving the RFC and proof-of-concept process from evaluation through to a final recommendation.',
-    tags: ['Architecture', 'RFC', 'PoC'],
-    liveUrl: '',
-    codeUrl: '',
-  },
 ]
 
 export const experience = [
@@ -69,11 +61,9 @@ export const experience = [
     company: 'Sampath Bank',
     period: 'Feb 2025 — Present',
     points: [
-      'Lead the bank’s data-engineering delivery — owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads.',
-      'Set the direction for the data platform and partner with business stakeholders to translate requirements into scalable data solutions.',
+      'Owning ETL pipeline design, reliability, and the engineering workflow across analytics and reporting workloads.',
       'Cut XML processing time ~7.5× (5 hours → 40 minutes) through query and script optimisation.',
       'Owned 10+ production ETL pipelines end to end, and led the data-platform selection (RFC and PoC to recommendation).',
-      'Single point of contact (SPOC) for the customer; authored FRS and HLD documents translating business requirements into technical specifications.',
     ],
   },
   {
@@ -86,6 +76,7 @@ export const experience = [
       'Developed and deployed Bash / Python automation on Linux servers for data queries and platform-monitoring reports.',
       'Established monitoring, alerting, and SLAs across ETL pipelines, improving observability and reducing failure-resolution time; led root-cause investigation for data-quality and freshness issues.',
       'Hosted and presented monthly progress reviews with the customer. (Telecommunications Engineer, Data Engineering 2020–2023; Senior 2023–2025.)',
+      'Single point of contact (SPOC) for the customer; authored FRS and HLD documents translating business requirements into technical specifications.',
     ],
   },
 ]
