@@ -10,4 +10,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: process.env.VITE_BASE || '/',
   plugins: [react()],
+  // React Three Fiber ships its own reconciler; dedupe React so only one
+  // copy is loaded (otherwise: "Invalid hook call / multiple copies of React").
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@react-three/fiber', 'three'],
+  },
 })

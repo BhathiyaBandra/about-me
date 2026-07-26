@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, Component, useEffect, useRef, useState } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { profile, about, projects, experience } from './data'
+
+const Hero3D = lazy(() => import('./Hero3D'))
 
 /* ─── Icons (inline SVG, currentColor) ─────────────────────── */
 const Icon = {
@@ -49,8 +52,21 @@ const Icon = {
     </svg>
   ),
 }
-
 const projectIcons = [Icon.Bolt, Icon.Pipeline, Icon.Layers]
+
+/* ─── Error boundary so a WebGL failure never breaks the page ── */
+class SafeBoundary extends Component {
+  constructor(p) {
+    super(p)
+    this.state = { failed: false }
+  }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
 
 /* ─── Theme hook ───────────────────────────────────────────── */
 function useTheme() {
@@ -66,45 +82,108 @@ function useTheme() {
   return [theme, () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))]
 }
 
-/* ─── Scroll-reveal hook (respects reduced motion) ─────────── */
-function useReveal() {
+/* ─── Motion variants ──────────────────────────────────────── */
+const easeOut = [0.22, 1, 0.36, 1]
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+}
+const rise = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+}
+
+/* Reveal wrapper — animates when scrolled into view (once). */
+function Reveal({ children, className, delay = 0, as = 'div' }) {
+  const M = motion[as] || motion.div
+  return (
+    <M
+      className={className}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={{
+        hidden: { opacity: 0, y: 26 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut, delay } },
+      }}
+    >
+      {children}
+    </M>
+  )
+}
+
+/* ─── Animated stat with count-up ──────────────────────────── */
+function AnimatedStat({ value, label }) {
   const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.5 })
+  const reduce = useReducedMotion()
+  const [display, setDisplay] = useState(value)
+
+  // Parse "6+", "7.5×", "2021" → number + prefix/suffix
+  const match = String(value).match(/^([^\d]*)([\d.]+)(.*)$/)
+  const target = match ? parseFloat(match[2]) : null
+  const pre = match ? match[1] : ''
+  const suf = match ? match[3] : ''
+  const decimals = match && match[2].includes('.') ? 1 : 0
+
   useEffect(() => {
-    const els = ref.current?.querySelectorAll('.reveal')
-    if (!els?.length) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      els.forEach((el) => el.classList.add('in-view'))
+    if (target == null) return
+    if (reduce || !inView) {
+      if (inView) setDisplay(value)
       return
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in-view')
-            io.unobserve(e.target)
-          }
-        })
-      },
-      { threshold: 0.12 },
-    )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [])
-  return ref
+    let raf
+    const start = performance.now()
+    const dur = 1400
+    const tick = (now) => {
+      const t = Math.min((now - start) / dur, 1)
+      const eased = 1 - Math.pow(1 - t, 3)
+      const n = target * eased
+      setDisplay(pre + n.toFixed(decimals) + suf)
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else setDisplay(value)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, reduce, target, value, pre, suf, decimals])
+
+  return (
+    <motion.div
+      ref={ref}
+      className="stat"
+      variants={rise}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+    >
+      <div className="stat-value">{display}</div>
+      <div className="stat-label">{label}</div>
+    </motion.div>
+  )
 }
 
 function ThemeToggle({ theme, onToggle }) {
   return (
-    <button className="theme-toggle" onClick={onToggle} aria-label="Toggle color theme" title="Toggle theme">
+    <motion.button
+      className="theme-toggle"
+      onClick={onToggle}
+      aria-label="Toggle color theme"
+      title="Toggle theme"
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.9 }}
+    >
       {theme === 'dark' ? <Icon.Sun /> : <Icon.Moon />}
-    </button>
+    </motion.button>
   )
 }
 
 function Nav({ theme, onToggle }) {
   const links = ['about', 'projects', 'experience', 'contact']
   return (
-    <header className="nav">
+    <motion.header
+      className="nav"
+      initial={{ y: -24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: easeOut }}
+    >
       <a href="#top" className="nav-brand">
         <span className="brand-mark">BB</span>
         Bhathiya Bandara
@@ -117,45 +196,65 @@ function Nav({ theme, onToggle }) {
         ))}
         <ThemeToggle theme={theme} onToggle={onToggle} />
       </nav>
-    </header>
+    </motion.header>
   )
 }
 
-function Hero() {
+function Hero({ show3d, accent }) {
   return (
     <section className="hero" id="top">
-      <p className="hero-eyebrow">
-        <span className="dot" /> Available for data-engineering leadership roles
-      </p>
-      <h1 className="hero-name">{profile.name}</h1>
-      <h2 className="hero-role">{profile.role}</h2>
-      <p className="hero-tagline">{profile.tagline}</p>
-      <p className="hero-location">
-        <Icon.Pin /> {profile.location}
-      </p>
-      <div className="hero-actions">
-        <a className="btn btn-primary" href="#projects">
-          View my work
-        </a>
-        <a className="btn" href={`mailto:${profile.email}`}>
-          <Icon.Mail /> Get in touch
-        </a>
-        {profile.resumeUrl && (
-          <a className="btn" href={profile.resumeUrl} target="_blank" rel="noreferrer">
-            Résumé
-          </a>
-        )}
-      </div>
+      {show3d && (
+        <div className="hero-bg" aria-hidden="true">
+          <SafeBoundary>
+            <Suspense fallback={null}>
+              <Hero3D accent={accent} />
+            </Suspense>
+          </SafeBoundary>
+        </div>
+      )}
+      <motion.div className="hero-inner" variants={container} initial="hidden" animate="show">
+        <motion.p className="hero-eyebrow" variants={rise}>
+          <span className="dot" /> Available for data-engineering leadership roles
+        </motion.p>
+        <motion.h1 className="hero-name" variants={rise}>
+          {profile.name}
+        </motion.h1>
+        <motion.h2 className="hero-role" variants={rise}>
+          {profile.role}
+        </motion.h2>
+        <motion.p className="hero-tagline" variants={rise}>
+          {profile.tagline}
+        </motion.p>
+        <motion.p className="hero-location" variants={rise}>
+          <Icon.Pin /> {profile.location}
+        </motion.p>
+        <motion.div className="hero-actions" variants={rise}>
+          <motion.a className="btn btn-primary" href="#projects" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            View my work
+          </motion.a>
+          <motion.a className="btn" href={`mailto:${profile.email}`} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            <Icon.Mail /> Get in touch
+          </motion.a>
+          {profile.resumeUrl && (
+            <motion.a className="btn" href={profile.resumeUrl} target="_blank" rel="noreferrer" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+              Résumé
+            </motion.a>
+          )}
+        </motion.div>
+      </motion.div>
 
       {profile.stats?.length > 0 && (
-        <div className="stats">
+        <motion.div
+          className="stats"
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.4 }}
+        >
           {profile.stats.map((s) => (
-            <div className="stat reveal" key={s.label}>
-              <div className="stat-value">{s.value}</div>
-              <div className="stat-label">{s.label}</div>
-            </div>
+            <AnimatedStat key={s.label} value={s.value} label={s.label} />
           ))}
-        </div>
+        </motion.div>
       )}
     </section>
   )
@@ -163,11 +262,11 @@ function Hero() {
 
 function SectionHead({ num, title }) {
   return (
-    <div className="section-head">
+    <Reveal className="section-head">
       <span className="section-num">{num}</span>
       <h2 className="section-title">{title}</h2>
       <span className="section-rule" />
-    </div>
+    </Reveal>
   )
 }
 
@@ -175,13 +274,13 @@ function About() {
   return (
     <section className="section" id="about">
       <SectionHead num="01." title="About" />
-      <div className="about-grid reveal">
-        <div className="about-text">
+      <div className="about-grid">
+        <Reveal className="about-text">
           {about.paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
-        </div>
-        <div className="about-skills">
+        </Reveal>
+        <Reveal className="about-skills" delay={0.1}>
           <h3>Tech stack</h3>
           {about.skillGroups.map((group) => (
             <div className="skill-group" key={group.label}>
@@ -193,7 +292,7 @@ function About() {
               </ul>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -203,11 +302,22 @@ function Projects() {
   return (
     <section className="section" id="projects">
       <SectionHead num="02." title="Selected Work" />
-      <div className="project-grid">
+      <motion.div
+        className="project-grid"
+        variants={container}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         {projects.map((p, i) => {
           const CardIcon = projectIcons[i % projectIcons.length]
           return (
-            <article className="card reveal" key={p.title}>
+            <motion.article
+              className="card"
+              key={p.title}
+              variants={rise}
+              whileHover={{ y: -6, transition: { duration: 0.2 } }}
+            >
               <div className="card-icon">
                 <CardIcon />
               </div>
@@ -232,10 +342,10 @@ function Projects() {
                   )}
                 </div>
               )}
-            </article>
+            </motion.article>
           )
         })}
-      </div>
+      </motion.div>
     </section>
   )
 }
@@ -246,7 +356,7 @@ function Experience() {
       <SectionHead num="03." title="Experience" />
       <div className="timeline">
         {experience.map((job, i) => (
-          <div className="timeline-item reveal" key={i}>
+          <Reveal className="timeline-item" key={i} delay={i * 0.05}>
             <div className="timeline-period">{job.period}</div>
             <div className="timeline-body">
               <h3 className="timeline-role">
@@ -258,7 +368,7 @@ function Experience() {
                 ))}
               </ul>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -269,22 +379,24 @@ function Contact() {
   return (
     <section className="section contact" id="contact">
       <SectionHead num="04." title="Get in touch" />
-      <p className="contact-lead reveal">
+      <Reveal className="contact-lead" as="p">
         I'm always open to interesting conversations and opportunities in data engineering. Feel free to reach out.
-      </p>
-      <a className="btn btn-primary reveal" href={`mailto:${profile.email}`}>
-        <Icon.Mail /> {profile.email}
-      </a>
-      <div className="socials reveal">
+      </Reveal>
+      <Reveal delay={0.08}>
+        <motion.a className="btn btn-primary" href={`mailto:${profile.email}`} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+          <Icon.Mail /> {profile.email}
+        </motion.a>
+      </Reveal>
+      <Reveal className="socials" delay={0.16}>
         {profile.socials.map((s) => {
           const SIcon = s.label === 'LinkedIn' ? Icon.LinkedIn : Icon.Mail
           return (
-            <a key={s.label} href={s.url} target="_blank" rel="noreferrer">
+            <motion.a key={s.label} href={s.url} target="_blank" rel="noreferrer" whileHover={{ y: -3 }}>
               <SIcon /> {s.label}
-            </a>
+            </motion.a>
           )
         })}
-      </div>
+      </Reveal>
     </section>
   )
 }
@@ -293,7 +405,7 @@ function Footer() {
   return (
     <footer className="footer">
       <p>
-        © {new Date().getFullYear()} {profile.name} · Built with React &amp; Vite
+        © {new Date().getFullYear()} {profile.name} · Built with React, Three.js &amp; Framer Motion
       </p>
     </footer>
   )
@@ -301,18 +413,25 @@ function Footer() {
 
 export default function App() {
   const [theme, toggleTheme] = useTheme()
-  const revealRef = useReveal()
+  const reduce = useReducedMotion()
+  // 3D only when motion is allowed and viewport is wide enough to be worth it.
+  const [show3d, setShow3d] = useState(false)
+  useEffect(() => {
+    setShow3d(!reduce && window.innerWidth > 720)
+  }, [reduce])
+  const accent = theme === 'dark' ? '#22c55e' : '#16a34a'
+
   return (
-    <div ref={revealRef}>
+    <>
       <Nav theme={theme} onToggle={toggleTheme} />
       <main className="container">
-        <Hero />
+        <Hero show3d={show3d} accent={accent} />
         <About />
         <Projects />
         <Experience />
         <Contact />
       </main>
       <Footer />
-    </div>
+    </>
   )
 }

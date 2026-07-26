@@ -196,6 +196,31 @@ a {
 /* ─── Hero ─────────────────────────────────────────────────── */
 .hero {
   padding: 92px 0 60px;
+  position: relative;
+}
+
+/* 3D particle canvas sits behind hero content, bleeding past the container */
+.hero-bg {
+  position: absolute;
+  top: -90px;
+  right: -14vw;
+  width: 62vw;
+  height: 720px;
+  max-height: 90vh;
+  pointer-events: none;
+  z-index: 0;
+  -webkit-mask-image: radial-gradient(ellipse at 65% 40%, #000 45%, transparent 78%);
+  mask-image: radial-gradient(ellipse at 65% 40%, #000 45%, transparent 78%);
+}
+
+.hero-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-eyebrow {
@@ -231,10 +256,20 @@ a {
 }
 
 .hero-name {
-  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
   line-height: 1.02;
   letter-spacing: -0.035em;
   font-weight: 800;
+  background: linear-gradient(
+    92deg,
+    var(--text) 0%,
+    var(--text) 55%,
+    var(--accent) 130%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .hero-role {
@@ -694,6 +729,9 @@ button:focus-visible {
 
 /* ─── Responsive ───────────────────────────────────────────── */
 @media (max-width: 760px) {
+  .hero-bg {
+    display: none;
+  }
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
