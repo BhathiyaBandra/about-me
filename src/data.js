@@ -12,6 +12,13 @@ export const profile = {
   location: 'Colombo, Sri Lanka',
   email: 'bhathiyabandara4@gmail.com',
   resumeUrl: '', // drop a PDF in /public (e.g. 'resume.pdf') and link it here
+  // Headline metrics shown in the hero — quantified proof of impact.
+  stats: [
+    { value: '6+', label: 'Years in data engineering' },
+    { value: '10+', label: 'Production ETL pipelines' },
+    { value: '7.5×', label: 'Faster XML processing' },
+    { value: '2021', label: 'GTS President Award' },
+  ],
   socials: [
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/bhathiya-bandara-34385b159/' },
     { label: 'Email', url: 'mailto:bhathiyabandara4@gmail.com' },
