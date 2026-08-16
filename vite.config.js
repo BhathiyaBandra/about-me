@@ -18,4 +18,14 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', '@react-three/fiber', 'three'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three', '@react-three/fiber'],
+          motion: ['framer-motion'],
+        },
+      },
+    },
+  },
 })

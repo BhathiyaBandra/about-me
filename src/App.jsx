@@ -51,6 +51,16 @@ const Icon = {
       <path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5M3 17l9 5 9-5" />
     </svg>
   ),
+  Menu: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  ),
+  Close: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
 }
 const projectIcons = [Icon.Bolt, Icon.Pipeline, Icon.Layers]
 
@@ -160,6 +170,46 @@ function AnimatedStat({ value, label }) {
   )
 }
 
+/* ─── Scroll Hooks ─────────────────────────────────────────── */
+function useScrollProgress() {
+  const [progress, setProgress] = useState(0)
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight
+      if (totalHeight > 0) {
+        setProgress((window.scrollY / totalHeight) * 100)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+  return progress
+}
+
+function useScrollSpy(sectionIds) {
+  const [activeSection, setActiveSection] = useState('top')
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 180
+      for (const id of sectionIds) {
+        const el = document.getElementById(id)
+        if (el) {
+          const top = el.offsetTop
+          const height = el.offsetHeight
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(id)
+            break
+          }
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [sectionIds])
+  return activeSection
+}
+
 function ThemeToggle({ theme, onToggle }) {
   return (
     <motion.button
@@ -175,39 +225,85 @@ function ThemeToggle({ theme, onToggle }) {
   )
 }
 
-function Nav({ theme, onToggle }) {
+function Nav({ theme, onToggle, activeSection, onOpenContact }) {
   const links = ['about', 'projects', 'experience', 'contact']
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <motion.header
-      className="nav"
-      initial={{ y: -24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: easeOut }}
-    >
-      <a href="#top" className="nav-brand">
-        <span className="brand-mark">BB</span>
-        Bhathiya Bandara
-      </a>
-      <nav className="nav-links">
-        {links.map((l, i) => (
-          <a key={l} href={`#${l}`} data-idx={`0${i + 1}`} className={l === 'contact' ? 'nav-cta' : ''}>
-            {l.charAt(0).toUpperCase() + l.slice(1)}
-          </a>
-        ))}
-        <ThemeToggle theme={theme} onToggle={onToggle} />
-      </nav>
-    </motion.header>
+    <>
+      <motion.header
+        className="nav"
+        initial={{ y: -24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: easeOut }}
+      >
+        <a href="#top" className="nav-brand">
+          <span className="brand-mark">BB</span>
+          Bhathiya Bandara
+        </a>
+        <nav className="nav-links">
+          {links.map((l, i) => (
+            <a
+              key={l}
+              href={`#${l}`}
+              data-idx={`0${i + 1}`}
+              className={`${l === activeSection ? 'active' : ''} ${l === 'contact' ? 'nav-cta' : ''}`}
+            >
+              {l.charAt(0).toUpperCase() + l.slice(1)}
+            </a>
+          ))}
+          <ThemeToggle theme={theme} onToggle={onToggle} />
+          <button
+            className="hamburger-btn"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Open mobile menu"
+          >
+            <Icon.Menu />
+          </button>
+        </nav>
+      </motion.header>
+
+      {mobileOpen && (
+        <motion.div
+          className="mobile-drawer"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <button className="mobile-drawer-close" onClick={() => setMobileOpen(false)}>×</button>
+          {links.map((l) => (
+            <a
+              key={l}
+              href={`#${l}`}
+              className={l === activeSection ? 'active' : ''}
+              onClick={() => setMobileOpen(false)}
+            >
+              {l.charAt(0).toUpperCase() + l.slice(1)}
+            </a>
+          ))}
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setMobileOpen(false)
+              onOpenContact()
+            }}
+          >
+            Send Message
+          </button>
+        </motion.div>
+      )}
+    </>
   )
 }
 
-function Hero({ show3d, accent }) {
+function Hero({ show3d, accent, theme, onOpenContact }) {
   return (
     <section className="hero" id="top">
       {show3d && (
         <div className="hero-bg" aria-hidden="true">
           <SafeBoundary>
             <Suspense fallback={null}>
-              <Hero3D accent={accent} />
+              <Hero3D accent={accent} theme={theme} />
             </Suspense>
           </SafeBoundary>
         </div>
@@ -232,9 +328,9 @@ function Hero({ show3d, accent }) {
           <motion.a className="btn btn-primary" href="#projects" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
             View my work
           </motion.a>
-          <motion.a className="btn" href={`mailto:${profile.email}`} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+          <motion.button className="btn" onClick={onOpenContact} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
             <Icon.Mail /> Get in touch
-          </motion.a>
+          </motion.button>
           {profile.resumeUrl && (
             <motion.a className="btn" href={profile.resumeUrl} target="_blank" rel="noreferrer" whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
               Résumé
@@ -375,7 +471,85 @@ function Experience() {
   )
 }
 
-function Contact() {
+function ContactModal({ isOpen, onClose }) {
+  const [sent, setSent] = useState(false)
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+
+  if (!isOpen) return null
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSent(true)
+    setTimeout(() => {
+      setSent(false)
+      setFormData({ name: '', email: '', message: '' })
+      onClose()
+    }, 2200)
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <motion.div
+        className="contact-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.92, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92 }}
+        transition={{ duration: 0.25 }}
+      >
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">×</button>
+        <h3>Send a Message</h3>
+        <p>Direct inquiry for {profile.name}</p>
+        {sent ? (
+          <div className="form-success">
+            ✓ Thank you! Your message has been sent successfully.
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="modal-name">Your Name</label>
+              <input
+                id="modal-name"
+                type="text"
+                required
+                placeholder="Jane Doe"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="modal-email">Your Email</label>
+              <input
+                id="modal-email"
+                type="email"
+                required
+                placeholder="jane@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="modal-message">Message</label>
+              <textarea
+                id="modal-message"
+                rows="4"
+                required
+                placeholder="Hi Bhathiya, I'd like to discuss a data engineering opportunity..."
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '6px' }}>
+              Send Message
+            </button>
+          </form>
+        )}
+      </motion.div>
+    </div>
+  )
+}
+
+function Contact({ onOpenContact }) {
   return (
     <section className="section contact" id="contact">
       <SectionHead num="04." title="Get in touch" />
@@ -383,9 +557,14 @@ function Contact() {
         I'm always open to interesting conversations and opportunities in data engineering. Feel free to reach out.
       </Reveal>
       <Reveal delay={0.08}>
-        <motion.a className="btn btn-primary" href={`mailto:${profile.email}`} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
-          <Icon.Mail /> {profile.email}
-        </motion.a>
+        <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <motion.button className="btn btn-primary" onClick={onOpenContact} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            <Icon.Mail /> Send Message
+          </motion.button>
+          <motion.a className="btn" href={`mailto:${profile.email}`} whileHover={{ y: -3 }} whileTap={{ scale: 0.96 }}>
+            Email Directly
+          </motion.a>
+        </div>
       </Reveal>
       <Reveal className="socials" delay={0.16}>
         {profile.socials.map((s) => {
@@ -414,24 +593,41 @@ function Footer() {
 export default function App() {
   const [theme, toggleTheme] = useTheme()
   const reduce = useReducedMotion()
-  // 3D only when motion is allowed and viewport is wide enough to be worth it.
+  const scrollProgress = useScrollProgress()
+  const activeSection = useScrollSpy(['top', 'about', 'projects', 'experience', 'contact'])
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+
+  // 3D canvas visibility based on motion preference & screen width
   const [show3d, setShow3d] = useState(false)
   useEffect(() => {
-    setShow3d(!reduce && window.innerWidth > 720)
+    const handleResize = () => {
+      setShow3d(!reduce && window.innerWidth > 720)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [reduce])
+
   const accent = theme === 'dark' ? '#22c55e' : '#16a34a'
 
   return (
     <>
-      <Nav theme={theme} onToggle={toggleTheme} />
+      <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }} />
+      <Nav
+        theme={theme}
+        onToggle={toggleTheme}
+        activeSection={activeSection}
+        onOpenContact={() => setIsContactModalOpen(true)}
+      />
       <main className="container">
-        <Hero show3d={show3d} accent={accent} />
+        <Hero show3d={show3d} accent={accent} theme={theme} onOpenContact={() => setIsContactModalOpen(true)} />
         <About />
         <Projects />
         <Experience />
-        <Contact />
+        <Contact onOpenContact={() => setIsContactModalOpen(true)} />
       </main>
       <Footer />
+      <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
     </>
   )
 }
