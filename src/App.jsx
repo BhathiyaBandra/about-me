@@ -394,6 +394,15 @@ function About() {
   )
 }
 
+/* Helper to resolve asset URLs dynamically for GitHub Pages subpath deployments */
+export function getAssetUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  const base = import.meta.env.BASE_URL || '/'
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  return base.endsWith('/') ? `${base}${cleanPath}` : `${base}/${cleanPath}`
+}
+
 function LightboxModal({ images, initialIdx = 0, onClose }) {
   const [idx, setIdx] = useState(initialIdx)
   if (!images || images.length === 0) return null
@@ -411,7 +420,7 @@ function LightboxModal({ images, initialIdx = 0, onClose }) {
       >
         <button className="lightbox-close" onClick={onClose} aria-label="Close image lightbox">✕</button>
         <div className="lightbox-image-wrap">
-          <img src={current.url} alt={current.caption || 'UI Screenshot'} />
+          <img src={getAssetUrl(current.url)} alt={current.caption || 'UI Screenshot'} />
         </div>
         {current.caption && <p className="lightbox-caption">{current.caption}</p>}
         {images.length > 1 && (
@@ -466,7 +475,7 @@ function Projects() {
                   onClick={() => setActiveGallery({ images: p.images || [{ url: p.image }], idx: 0 })}
                   title="Click to view sample UI pictures"
                 >
-                  <img src={p.image} alt={p.title} />
+                  <img src={getAssetUrl(p.image)} alt={p.title} />
                   {p.images?.length > 1 && (
                     <span className="card-thumb-badge">
                       📷 {p.images.length} Screenshots
