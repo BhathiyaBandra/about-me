@@ -45,6 +45,40 @@ export const about = {
 // signature initiatives. Edit titles/descriptions or add real project links.
 export const projects = [
   {
+    title: 'Enterprise Incremental ETL Platform',
+    description:
+      'Enterprise data pipeline framework for automated, reliable, and high-performance incremental data extraction from Oracle DB to Greenplum DWH. Orchestrated via Apache Airflow and powered by PySpark, featuring dual Date/Key incremental extraction engines, automated COUNT(1) trend reconciliation, self-healing data remediation, dynamic annual table partitioning, and automated HTML/CSV executive reporting.',
+    tags: ['Apache Airflow', 'PySpark', 'Oracle SQL', 'Greenplum', 'Python', 'ETL / ELT'],
+    image: '/projects/etl_architecture.jpg',
+    images: [
+      {
+        url: '/projects/etl_architecture.jpg',
+        caption: 'System Architecture — Apache Airflow orchestrates PySpark incremental extraction from Oracle DB to Greenplum DWH with automated COUNT(1) trend reconciliation and self-healing data remediation.',
+      },
+    ],
+    liveUrl: '',
+    codeUrl: '',
+  },
+  {
+    title: 'Enterprise Server & Disk Usage Monitor',
+    description:
+      'Modular Django web application for internal system monitoring. Features real-time per-directory Greenplum disk space usage drill-downs, aggregated Change Data Capture (CDC) history trends, proportional share bars, and interactive treemap visualizations designed for offline enterprise environments.',
+    tags: ['Django', 'Python', 'Greenplum', 'SQL', 'Chart.js', 'Treemap'],
+    image: '/projects/monitoring_dashboard.jpg',
+    images: [
+      {
+        url: '/projects/monitoring_dashboard.jpg',
+        caption: 'Disk Usage Dashboard — Directory drill-down table with proportional share bars and historical CDC usage trend chart.',
+      },
+      {
+        url: '/projects/monitoring_treemap.jpg',
+        caption: 'Treemap Storage Modal — Color-coded area-proportional directory allocation visualization.',
+      },
+    ],
+    liveUrl: '',
+    codeUrl: '',
+  },
+  {
     title: 'XML Processing Optimization',
     description:
       'Cut XML processing time by ~7.5× — from 5 hours to 40 minutes — through query and script optimisation on production data workloads.',

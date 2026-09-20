@@ -394,7 +394,53 @@ function About() {
   )
 }
 
+function LightboxModal({ images, initialIdx = 0, onClose }) {
+  const [idx, setIdx] = useState(initialIdx)
+  if (!images || images.length === 0) return null
+  const current = images[idx]
+
+  return (
+    <div className="lightbox-backdrop" onClick={onClose}>
+      <motion.div
+        className="lightbox-content"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.94 }}
+        transition={{ duration: 0.2 }}
+      >
+        <button className="lightbox-close" onClick={onClose} aria-label="Close image lightbox">✕</button>
+        <div className="lightbox-image-wrap">
+          <img src={current.url} alt={current.caption || 'UI Screenshot'} />
+        </div>
+        {current.caption && <p className="lightbox-caption">{current.caption}</p>}
+        {images.length > 1 && (
+          <div className="lightbox-controls">
+            <button
+              className="lightbox-btn"
+              onClick={() => setIdx((idx - 1 + images.length) % images.length)}
+            >
+              ← Previous
+            </button>
+            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+              {idx + 1} of {images.length}
+            </span>
+            <button
+              className="lightbox-btn"
+              onClick={() => setIdx((idx + 1) % images.length)}
+            >
+              Next →
+            </button>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  )
+}
+
 function Projects() {
+  const [activeGallery, setActiveGallery] = useState(null)
+
   return (
     <section className="section" id="projects">
       <SectionHead num="02." title="Selected Work" />
@@ -414,34 +460,66 @@ function Projects() {
               variants={rise}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
             >
-              <div className="card-icon">
-                <CardIcon />
+              {p.image && (
+                <div
+                  className="card-thumb"
+                  onClick={() => setActiveGallery({ images: p.images || [{ url: p.image }], idx: 0 })}
+                  title="Click to view sample UI pictures"
+                >
+                  <img src={p.image} alt={p.title} />
+                  {p.images?.length > 1 && (
+                    <span className="card-thumb-badge">
+                      📷 {p.images.length} Screenshots
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className="card-header-row">
+                <div className="card-icon" style={{ margin: 0 }}>
+                  <CardIcon />
+                </div>
+                <h3 className="card-title" style={{ margin: 0 }}>{p.title}</h3>
               </div>
-              <h3 className="card-title">{p.title}</h3>
               <p className="card-desc">{p.description}</p>
               <ul className="tag-list">
                 {p.tags.map((t) => (
                   <li key={t}>{t}</li>
                 ))}
               </ul>
-              {(p.liveUrl || p.codeUrl) && (
-                <div className="card-links">
-                  {p.liveUrl && (
-                    <a href={p.liveUrl} target="_blank" rel="noreferrer">
-                      Live <Icon.Arrow />
-                    </a>
-                  )}
-                  {p.codeUrl && (
-                    <a href={p.codeUrl} target="_blank" rel="noreferrer">
-                      Code <Icon.Arrow />
-                    </a>
-                  )}
-                </div>
-              )}
+              <div className="card-links">
+                {p.images && p.images.length > 0 && (
+                  <a
+                    href="#gallery"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setActiveGallery({ images: p.images, idx: 0 })
+                    }}
+                  >
+                    View UI Screenshots <Icon.Arrow />
+                  </a>
+                )}
+                {p.liveUrl && (
+                  <a href={p.liveUrl} target="_blank" rel="noreferrer">
+                    Live <Icon.Arrow />
+                  </a>
+                )}
+                {p.codeUrl && (
+                  <a href={p.codeUrl} target="_blank" rel="noreferrer">
+                    Code <Icon.Arrow />
+                  </a>
+                )}
+              </div>
             </motion.article>
           )
         })}
       </motion.div>
+      {activeGallery && (
+        <LightboxModal
+          images={activeGallery.images}
+          initialIdx={activeGallery.idx}
+          onClose={() => setActiveGallery(null)}
+        />
+      )}
     </section>
   )
 }
